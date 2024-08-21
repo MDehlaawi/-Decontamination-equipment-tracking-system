@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patches List</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="add-equipment.html">Add new equipment</a></li>
+            <li><a href="decontamination.html">Start decontamination</a></li>
+            <li><a href="patches.html">Patches</a></li>
+            <li><a href="reports.html">Extract reports</a></li>
+        </ul>
+    </nav>
+
+
+    <div class="main-content">
+        <!-- Centered Title -->
+        <div id="decontaminationPage" class="page active">
+         <h2>patches list</h2>
+          <div class="header">
+        <!-- White Container -->
+            <table id="patchTable">
+                <thead>
+                    <tr>
+                        <th>Patch Number</th>
+                        <th>Employee Name</th>
+                        <th>State</th>
+                        <th>Duration</th>
+                        <th>More Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Patches will be dynamically loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal for showing patch details -->
+        <div id="patchModal" class="modal">
+            <div class="modal-content">
+                <h3 id="modalPatchNumber">Patch Number:</h3>
+                <p id="modalPatchState">State:</p>
+                <h4>Equipment:</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Serial Number</th>
+                            <th>Type</th>
+                            <th>Clinic</th>
+                        </tr>
+                    </thead>
+                    <tbody id="equipmentDetails">
+                        <!-- Equipment details will be dynamically added here -->
+                    </tbody>
+                </table>
+                <div class="modal-buttons">
+                    <button onclick="closeModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadPatches() {
+            const patches = JSON.parse(localStorage.getItem('patches')) || [];
+            const patchTableBody = document.querySelector("#patchTable tbody");
+
+            patches.forEach((patch, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${patch.patchNumber}</td>
+                    <td>${patch.employeeName}</td>
+                    <td>${patch.processDetails}</td>
+                    <td>${patch.dateTime}</td>
+                    <td><button onclick="showPatchDetails(${index})" class="info-btn">+</button></td>
+                `;
+                patchTableBody.appendChild(row);
+            });
+        }
+
+        function showPatchDetails(index) {
+            const patches = JSON.parse(localStorage.getItem('patches')) || [];
+            const selectedPatch = patches[index];
+
+            document.getElementById('modalPatchNumber').innerText = `Patch Number: ${selectedPatch.patchNumber}`;
+            document.getElementById('modalPatchState').innerText = `State: ${selectedPatch.processDetails}`;
+
+            const equipmentDetails = document.getElementById('equipmentDetails');
+            equipmentDetails.innerHTML = ''; // Clear previous data
+
+            selectedPatch.equipments.forEach(equipment => {
+                const equipmentRow = document.createElement('tr');
+                equipmentRow.innerHTML = `
+                    <td>${equipment.serialNumber}</td>
+                    <td>${equipment.type}</td>
+                    <td>${equipment.clinic}</td>
+                `;
+                equipmentDetails.appendChild(equipmentRow);
+            });
+
+            document.getElementById('patchModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('patchModal').style.display = 'none';
+        }
+
+        window.onload = loadPatches;
+    </script>
+</body>
+</html>

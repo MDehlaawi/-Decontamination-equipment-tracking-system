@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="add-equipment.html">Add new equipment</a></li>
+            <li><a href="decontamination.html">Start decontamination</a></li>
+            <li><a href="patches.html">Patches</a></li> 
+            <li><a href="reports.html">Extract reports</a></li>
+    </nav>
+    <div class="main-content">
+        <div id="processPage" class="page active">
+            <div class="process-header">
+                <span>Patch no: <span id="patchNumber">#000000</span></span>
+                <span>State: <span id="processState">Zone 1 Rinsing in process</span></span>
+            </div>
+            
+            <!-- Zone 1 Header -->
+            <h2 class="zone-header">Zone 1</h2>
+            
+            <div class="process-container">
+                <div class="process-box" id="process1" onclick="openProcessModal('Rinsing', 1)">Rinsing</div>
+                <div class="process-box disabled" id="process2" onclick="openProcessModal('OPA strap test', 2)">OPA strap test</div>
+                <div class="process-box disabled" id="process3" onclick="openProcessModal('Ultrasonic test', 3)">Ultrasonic test</div>
+                <div class="process-box disabled" id="process4" onclick="openProcessModal('Drying', 4)">Drying</div>
+            </div>
+            
+            <!-- Zone 2 Header -->
+            <h2 class="zone-header">Zone 2</h2>
+            
+            <div class="process-container">
+                <div class="process-box disabled" id="process5" onclick="openProcessModal('Bomical dich test', 5)">Bomical dich test</div>
+                <div class="process-box disabled" id="process6" onclick="openProcessModal('Bomical dich test', 6)">Bomical dich test</div>
+                <div class="process-box disabled" id="process7" onclick="openProcessModal('Bomical dich test', 7)">Bomical dich test</div>
+                <div class="process-box disabled" id="process8" onclick="openProcessModal('IP test', 8)">IP test</div>
+            </div>
+
+            <button onclick="completeCurrentProcess()" class="disabled" id="nextButton">Next</button>
+        </div>
+
+        <div id="processModal" class="modal">
+            <div class="modal-content">
+                <h2 id="processModalTitle">Process</h2>
+                <label for="processInput">Enter details:</label>
+                <input type="text" id="processInput">
+                
+                <!-- Import File Section -->
+                <label for="importFile">Import file:</label>
+                <input type="file" id="importFile">
+                
+                <div class="modal-buttons">
+                    <button onclick="completeCurrentProcess()">Complete</button>
+                    <button onclick="closeProcessModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProcessId = 1;
+        const totalProcessesInZone1 = 4;
+        const totalProcesses = 8;
+
+        const processNames = [
+            "Rinsing",
+            "OPA strap test",
+            "Ultrasonic test",
+            "Drying",
+            "Bomical dich test",
+            "Bomical dich test",
+            "Bomical dich test",
+            "IP test"
+        ];
+
+        // Function to open the process modal and handle the completion of a process
+        function openProcessModal(processName, processId) {
+            if (document.getElementById('process' + processId).classList.contains('disabled')) {
+                return; // If the process is disabled, do nothing
+            }
+
+            // Check if this is the current process
+            if (processId === currentProcessId) {
+                document.getElementById('processModalTitle').innerText = processName;
+                document.getElementById('processModal').style.display = 'block';
+            }
+        }
+
+        function closeProcessModal() {
+            document.getElementById('processModal').style.display = 'none';
+        }
+
+        function completeCurrentProcess() {
+            const processInput = document.getElementById('processInput').value;
+            const importFile = document.getElementById('importFile').files[0];
+
+            if (!processInput) {
+                alert('Please enter details to complete the process.');
+                return;
+            }
+
+            if (importFile) {
+                // Handle the uploaded file (e.g., read its content, save it, etc.)
+                console.log(`File uploaded: ${importFile.name}`);
+            }
+
+            // Mark the current process as completed
+            const activeProcess = document.getElementById('process' + currentProcessId);
+            activeProcess.classList.add('completed');
+            activeProcess.classList.remove('in-progress');
+
+            // Move to the next process
+            currentProcessId++;
+
+            if (currentProcessId <= totalProcesses) {
+                const nextProcess = document.getElementById('process' + currentProcessId);
+                nextProcess.classList.remove('disabled');
+                nextProcess.classList.add('in-progress');
+
+                // Update the state display based on the current process
+                updateProcessState();
+            }
+
+            // Update the state for all boxes
+            updateBoxesState();
+
+            // Check if all processes in the current zone are completed
+            const allProcessesCompleted = document.querySelectorAll('.process-container .process-box').length === document.querySelectorAll('.process-container .process-box.completed').length;
+
+            // If all processes are completed, enable the "Next" button
+            if (allProcessesCompleted) {
+                document.getElementById('nextButton').classList.remove('disabled');
+            }
+
+            closeProcessModal();
+        }
+
+        function updateProcessState() {
+            let currentZone = currentProcessId <= totalProcessesInZone1 ? 1 : 2;
+            let currentProcessName = processNames[currentProcessId - 1];
+            document.getElementById('processState').innerText = `Zone ${currentZone} ${currentProcessName} in process`;
+        }
+
+        function updateBoxesState() {
+            // Iterate through all process boxes to update their state
+            for (let i = 1; i <= totalProcesses; i++) {
+                const processBox = document.getElementById('process' + i);
+                if (i < currentProcessId) {
+                    processBox.classList.add('completed');
+                    processBox.classList.remove('in-progress');
+                    processBox.classList.remove('disabled');
+                } else if (i === currentProcessId) {
+                    processBox.classList.add('in-progress');
+                    processBox.classList.remove('completed');
+                    processBox.classList.remove('disabled');
+                } else {
+                    processBox.classList.add('disabled');
+                    processBox.classList.remove('in-progress');
+                    processBox.classList.remove('completed');
+                }
+            }
+        }
+
+        // Function to get URL parameter
+        function getURLParameter(name) {
+            return new URLSearchParams(window.location.search).get(name);
+        }
+
+        // Initial setup to activate the first process
+        window.onload = function() {
+            var patchNumber = getURLParameter('patchNumber');
+            if (patchNumber) {
+                document.getElementById('patchNumber').innerText = '#' + patchNumber;
+            }
+
+            // Activate the first process in Zone 1
+            document.getElementById('process1').classList.add('in-progress');
+            updateProcessState();
+        }
+    </script>
+</body>
+</html>
